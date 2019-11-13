@@ -114,9 +114,9 @@ debug_command <= command;
 
 
 -- Processo que troca estado a cada subida do clock de 2 segundos
-	process (clk_2seg)
+	process (clk)
 	begin
-		if (clk_2seg'event and clk_2seg = '1') then
+		if (clk'event and clk = '1') then
 			if (reset = '1') then
 				position <= 1;
 				rA <= "00000";
