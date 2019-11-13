@@ -20,7 +20,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.all;
-use IEEE.STD_LOGIC_UNSIGNED.all;
+use IEEE.STD_LOGIC_SIGNED.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -40,7 +40,8 @@ entity alu is
 		start			: IN std_logic;
 		result 		: OUT std_logic_vector(4 downto 0); -- resultado da operacao
 		done 			: OUT std_logic;
-		n_z_flag 	: OUT std_logic_vector(1 downto 0)  -- flag de resultado -> 00 = normal, 01 = Zero, 10 = Negativo
+		zero_flag 		: OUT std_logic := '0';
+		negative_flag 	: OUT std_logic := '0'
 	);
 end alu;
 
@@ -59,13 +60,13 @@ begin
 					when idle => 
 						if(start = '1') then
 							pst <= processing;
-							n_z_flag <= "00";
+							negative_flag <= '0';
 						end if;
 					when processing =>
 						case opcode is
-							when "00101" => temp_result <= (unsigned(operando1) + unsigned(operando2));		--A + B 
+							when "00101" => temp_result <= (signed(operando1) + signed(operando2));		--A + B 
 									
-							when "00110" => temp_result <= (unsigned(operando1) - unsigned(operando2));		-- A - B
+							when "00110" => temp_result <= (signed(operando1) - signed(operando2));		-- A - B
 							
 							when "00111" => temp_result <= operando1 AND operando2;									-- A AND B
 
@@ -77,13 +78,13 @@ begin
 
 							when "01011" => temp_result <= operando1 NAND operando2;									-- A NAND B
 
-							when "10000" => temp_result <= std_logic_vector(operando1 + 1);						-- INC A
+							when "10000" => temp_result <= (signed(operando1) + 1);						-- INC A
 
-							when "10001" => temp_result <= std_logic_vector(operando2 + 1);						-- INC B
+							when "10001" => temp_result <= (signed(operando2) + 1);						-- INC B
 
-							when "10010" => temp_result <= std_logic_vector(operando1 - 1);						-- DEC A
+							when "10010" => temp_result <= (signed(operando1) - 1);						-- DEC A
 
-							when "10011" => temp_result <= std_logic_vector(operando2 - 1);						-- DEC B
+							when "10011" => temp_result <= (signed(operando2) - 1);						-- DEC B
 
 							when others => temp_result <= "00000";
 						end case;
@@ -93,12 +94,11 @@ begin
 						result <= temp_result;
 						done <= '1';
 						pst <= set;
-						if (unsigned(temp_result) = 0) then
-							n_z_flag <= "01";
-						elsif (operando2 > operando1 and opcode = "00110") then
-							n_z_flag <= "10";
+						negative_flag <= temp_result(4);
+						if (signed(temp_result) = 0) then
+							zero_flag <= '0';
 						else
-							n_z_flag <= "00";
+							zero_flag <= '0';
 						end if;
 						
 					when set =>

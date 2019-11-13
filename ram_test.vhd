@@ -19,8 +19,8 @@ ARCHITECTURE behavior OF RAM_TEST IS
          reset : IN  std_logic;
          r_w : IN  std_logic;
 			endereco : IN integer range 0 to 31;
-         leitura : OUT  std_logic_vector(9 downto 0);
-			escrita : IN  std_logic_vector(9 downto 0)
+         leitura : OUT  std_logic_vector(4 downto 0);
+			escrita : IN  std_logic_vector(4 downto 0)
         );
     END COMPONENT;
     
@@ -30,10 +30,10 @@ ARCHITECTURE behavior OF RAM_TEST IS
    signal reset : std_logic := '0';
    signal r_w : std_logic := '0';
 	signal endereco : integer range 0 to 31 := 0;
-	signal escrita : std_logic_vector(9 downto 0);
+	signal escrita : std_logic_vector(4 downto 0);
 
  	--Outputs
-   signal leitura : std_logic_vector(9 downto 0);
+   signal leitura : std_logic_vector(4 downto 0);
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
@@ -65,7 +65,6 @@ BEGIN
    begin		
 	
 	reset <= '1';
-	--escrita <= "0010011111";
       -- hold reset state for 100 ns.
       wait for 100 ns;	
 		reset <= '0';
@@ -74,8 +73,7 @@ BEGIN
       wait for clk_period*10;
 		reset <= '0';
 		r_w <= '1';
-		endereco <= 1;
-	--	escrita <= "1111100000";
+		endereco <= 0;
 		
 --		wait for clk_period*10;
 --		reset <= '0';
@@ -86,7 +84,6 @@ BEGIN
 		reset <= '0';
 		r_w <= '1';
 		endereco<= 2;
---		escrita <= "1010101010";
 
 --		wait for clk_period*10;
 --		r_w <= '0';

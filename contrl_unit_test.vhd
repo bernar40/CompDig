@@ -30,7 +30,7 @@ ARCHITECTURE behavior OF UC_TEST IS
  	--Outputs
    signal zero_flag_led : std_logic;
    signal negative_flag_led : std_logic;
-	signal debug_command : std_logic_vector (4 downto 0) := "00000";
+	signal debug_command : std_logic_vector (4 downto 0);
 
    -- Clock period definitions
    constant clk_period : time := 20 ns;

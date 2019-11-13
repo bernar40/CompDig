@@ -14,14 +14,15 @@ ARCHITECTURE behavior OF ALU_TEST IS
  
     COMPONENT alu
 		port (
-			clk  			: IN  std_logic;
-			operando1 	: IN std_logic_vector(4 downto 0);
-			operando2 	: IN std_logic_vector(4 downto 0);
-			opcode 		: IN std_logic_vector(4 downto 0); -- opcode do comando atual a ser executado
-			start			: IN std_logic;
-			result 		: OUT std_logic_vector(4 downto 0); -- resultado da operacao
-			done 			: OUT std_logic;
-			n_z_flag 	: OUT std_logic_vector(1 downto 0)  -- flag de resultado -> 00 = normal, 01 = Zero, 10 = Negativo
+			clk  				: IN  std_logic;
+			operando1 		: IN std_logic_vector(4 downto 0);
+			operando2 		: IN std_logic_vector(4 downto 0);
+			opcode 			: IN std_logic_vector(4 downto 0); -- opcode do comando atual a ser executado
+			start				: IN std_logic;
+			result 			: OUT std_logic_vector(4 downto 0); -- resultado da operacao
+			done 				: OUT std_logic;
+			zero_flag 		: OUT std_logic := '0';
+			negative_flag 	: OUT std_logic := '0'
 		);
     END COMPONENT;
     
@@ -36,7 +37,8 @@ ARCHITECTURE behavior OF ALU_TEST IS
  	--Outputs
    signal result 	: std_logic_vector(4 downto 0);
    signal done 	: std_logic;
-	signal n_z_flag 		: std_logic_vector(1 downto 0);
+	signal zero_flag 		:  std_logic;
+	signal negative_flag 	:  std_logic;
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
@@ -52,7 +54,8 @@ BEGIN
 		result => result,
 		start => start,
 		done => done,
-		n_z_flag => n_z_flag
+		zero_flag => zero_flag,
+		negative_flag => negative_flag
 		);
 
    -- Clock process definitions
@@ -74,7 +77,7 @@ BEGIN
 		
       -- hold reset state for 100 ns.
       wait for 100 ns;	
-		opcode <= "00101";
+		opcode <= "10010";
 		start <= '1';
 		wait for clk_period;
 		start <= '0';
@@ -85,7 +88,7 @@ BEGIN
 		wait for clk_period*10;
 		operando1 <= "00000";
 		operando2 <= "00001";
-		opcode <= "00110";
+		opcode <= "10010";
 		start <= '1';
 		wait for clk_period;
 		start <= '0';
