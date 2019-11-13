@@ -1,4 +1,4 @@
--- Módulo principal responsável pelo controle da CPU
+-- M?dulo principal respons?vel pelo controle da CPU
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -29,8 +29,8 @@ component memoria_ram
 			clk 			: IN std_logic;
 			reset, r_w	: IN std_logic;
 			endereco 		: IN integer range 0 to 32;
-			leitura 		: OUT std_logic_vector (9 downto 0);
-			escrita 		: IN std_logic_vector (9 downto 0);
+			leitura 		: OUT std_logic_vector (4 downto 0);
+			escrita 		: IN std_logic_vector (4 downto 0);
 			dado_30 		: OUT std_logic_vector (4 downto 0)
 			);
 end component;
@@ -52,8 +52,9 @@ end component;
 --SINAIS RAM
 SIGNAL r_w 			: std_logic;
 SIGNAL endereco 	: integer range 0 to 32;
-SIGNAL escrita 	: std_logic_vector ( 9 downto 0);
-SIGNAL leitura 	: std_logic_vector ( 9 downto 0);
+SIGNAL escrita 	: std_logic_vector ( 4 downto 0);
+SIGNAL leitura 	: std_logic_vector ( 4 downto 0);
+SIGNAL mem30		: std_logic_vector ( 4 downto 0);
 
 --SINAIS ALU
 SIGNAL inst				: std_logic_vector ( 4 downto 0);
@@ -63,26 +64,30 @@ SIGNAL done_ALU 		: std_logic;
 SIGNAL n_z_flag 		: std_logic_vector ( 1 downto 0) := "00";
 
 --SINAIS CONTROL UNIT
+SIGNAL halt_bool			: std_logic;
+SIGNAL mv_position		: integer range 0 to 32 := 0;
+SIGNAL jmp_position		: integer range 0 to 32 := 0;
 SIGNAL position 			: integer range 0 to 32 := 0;
 SIGNAL rA 	 				: std_logic_vector ( 4 downto 0);
 SIGNAL rB					: std_logic_vector ( 4 downto 0);
 SIGNAL command				: std_logic_vector ( 4 downto 0):= "00000";
 SIGNAL value 	 			: std_logic_vector ( 4 downto 0):= "00000";
-SIGNAL n_z_flag_cunit 		: std_logic_vector ( 1 downto 0) := "00";
-SIGNAL cont_loop 			: unsigned(25 downto 0) := "00000000000000000000000000";
+SIGNAL n_z_flag_cunit 	: std_logic_vector ( 1 downto 0) := "00";
+
 
 -- CONTROLE DO CLOCK
-signal clk_2seg : STD_LOGIC;
-signal count_clk : INTEGER := 0;
-signal direction_clk : STD_LOGIC := '1';
+SIGNAL debug_clk500hz : std_logic;
+SIGNAL clk_2seg : std_logic;
+SIGNAL count_clk : integer := 0;
+SIGNAL direction_clk : std_logic := '1';
 
 -- ESTADOS DE EXECUCAO
-TYPE state_type IS (idle, reading, fecthing, processing, processing_ALU, wait_st, finishing);
+TYPE state_type IS (idle, reading, fecthing, fetching_mv, processing_mv, fetching_jmp, processing_jmp, processing, processing_ALU, finishing, halt);
 SIGNAL pst_uc	: 	state_type := idle;
 
 begin
-RAM_UC: RAM port map (clk=>clk, reset=>reset, r_w=>r_w, endereco=>endereco, leitura=>leitura, escrita=>escrita, dado_30=>mem30);
-ALU_UC: ALU port map (clk=>clk, inst=>command, operador1=>rA, operador1=>rB, result=>result, start=>start_ALU, done=>done_ALU, n_z_flag => n_z_flag);
+RAM_UC: memoria_ram port map (clk=>clk_2seg, reset=>reset, r_w=>r_w, endereco=>endereco, leitura=>leitura, escrita=>escrita, dado_30=>mem30);
+ALU_UC: ALU port map (clk=>clk_2seg, opcode=>command, operando1=>rA, operando2=>rB, result=>result, start=>start_ALU, done=>done_ALU, n_z_flag => n_z_flag);
 
 
 negative_flag_led <= n_z_flag_cunit(0);
@@ -118,8 +123,8 @@ debug_command <= command;
 				rB <= "00000";
 				pst_uc <= idle;
 				start_ALU <= '0';
-				nz_flag <= "00";
-				ps <= ns;
+				n_z_flag <= "00";
+				halt_bool <= '0';
 			else
 				case pst_uc is
 					when idle =>
@@ -131,26 +136,45 @@ debug_command <= command;
 						r_w <= '1'; -- set leitura
 						pst_uc <= fecthing;
 					when fecthing => 
-						command <= leitura(9 downto 5);
-						value <= leitura(4 downto 0);
+						command <= leitura;
 						pst_uc <= processing;
+					when fetching_mv =>
+						mv_position <= to_integer(unsigned(leitura));
+						endereco <= mv_position;
+						r_w <= '1';
+						pst_uc <= processing_mv;
+					when processing_mv =>
+						if (command = "00001") then
+							rA <= leitura;
+						else
+							escrita <= rA;
+							r_w <= '0';
+						end if;
+						pst_uc <= finishing;
+					when fetching_jmp =>
+						jmp_position <= to_integer(unsigned(leitura));
+						endereco <= jmp_position;
+						r_w <= '1';
+						pst_uc <= processing_jmp;
+					when processing_jmp => 
+						position <= to_integer(unsigned(leitura));
+						pst_uc <= idle;
 					when processing =>
 							case command is 
 								when "00001" => -- MOV A, end
+									endereco <= position + 1;
 									r_w <= '1';
-									rA <= leitura( 4 downto 0);
-									pst_uc <= wait_st;
+									pst_uc <= fetching_mv;
 								when "00010" => -- MOV end, A
-									escrita (4 downto 0) <= rA;
-									escrita (9 downto 5) <= "00001";
-									r_w <= '0';
-									pst_uc <= wait_st;
+									endereco <= position + 1;
+									r_w <= '1';
+									pst_uc <= fetching_mv;
 								when "00011" => -- MOV A, B
 									rA <= rB;
-									pst_uc <= wait_st;	
+									pst_uc <= finishing;	
 								when "00100" => -- MOV B, A
 									rB <= rA;
-									pst_uc <= wait_st;
+									pst_uc <= finishing;
 								when "00101" => -- ADD A, B
 									start_ALU <= '1';
 									pst_uc <= processing_ALU;
@@ -163,27 +187,58 @@ debug_command <= command;
 								when "01000" => -- A OR B
 									start_ALU <= '1';
 									pst_uc <= processing_ALU;	
-
 								when "01001" => -- A XOR B
 									start_ALU <= '1';
 									pst_uc <= processing_ALU;	
-
 								when "01010" => -- NOT A
 									start_ALU <= '1';
 									pst_uc <= processing_ALU;	
-									
 								when "01011" => -- A NAND B
 									start_ALU <= '1';
 									pst_uc <= processing_ALU;	
---								when JZ, when JN, others...
+								when "01100" => -- JZ
+									if(n_z_flag = "01") then
+										endereco <= position + 1;
+										r_w <= '1';
+										pst_uc <= fetching_jmp;
+									else
+										pst_uc <= finishing;
+									end if;						
+								when "01101" => -- JN
+									if(n_z_flag = "10") then
+										endereco <= position + 1;
+										r_w <= '1';
+										pst_uc <= fetching_jmp;
+									else
+										pst_uc <= finishing;
+									end if;	
+								when "01110" => -- HALT
+									pst_uc <= halt;
+								when "01111" => -- JMP
+									endereco <= position + 1;
+									r_w <= '1';
+									pst_uc <= fetching_jmp;
+								when others => 
+									r_w <= '1';
+									pst_uc <= finishing;
 							end case;
 						when processing_ALU =>
 							n_z_flag_cunit <= n_z_flag;
 							if (done_ALU = '1') then
-										pst_uc <= wait_st;
+										pst_uc <= finishing;
 										rA <= result;
+							end if;							
+						when halt =>
+							halt_bool <= '1';
+							pst_uc <= finishing;
+						when finishing =>
+							if (position < 32 and halt_bool = '0') then
+									position <= position + 1;
+									pst_uc <= idle;
 							end if;
---						when wait_st, finising, others.. 
+							--printar no LCD que acabou
+						when others =>
+							pst_uc <= idle;
 				end case;
 			end if;
 		end if;
