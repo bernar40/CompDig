@@ -18,7 +18,12 @@ ARCHITECTURE behavior OF UC_TEST IS
 				reset 					: IN std_logic;
 				zero_flag_led	 		: OUT std_logic := '0';
 				negative_flag_led 	: OUT std_logic := '0';
-				debug_command 			: OUT std_logic_vector (4 downto 0)
+				clk_2s_led				: OUT std_logic;
+				mem30_led				: OUT std_logic_vector ( 4 downto 0);
+				lcd_e_out				: OUT std_logic;
+				lcd_rs_out	 		   : OUT std_logic;
+				lcd_rw_out				: OUT std_logic;
+				sf_d_out					: OUT STD_LOGIC_VECTOR(11 downto 8)
 		);
 	END COMPONENT;
     
@@ -28,9 +33,16 @@ ARCHITECTURE behavior OF UC_TEST IS
    signal reset : std_logic := '0';
 
  	--Outputs
-   signal zero_flag_led : std_logic;
+   signal zero_flag_led 	: std_logic;
    signal negative_flag_led : std_logic;
-	signal debug_command : std_logic_vector (4 downto 0);
+	signal sf_d_out 			: sTD_LOGIC_VECTOR(11 downto 8);
+	SIGNAL lcd_e_out 			: std_logic;
+	SIGNAL lcd_rw_out		 	: std_logic;
+	SIGNAL lcd_rs_out 		: std_logic;
+	SIGNAL mem30_led 			: std_logic_vector (4 downto 0);
+	signal clk_2s_led 		: std_logic;
+
+
 
    -- Clock period definitions
    constant clk_period : time := 20 ns;
@@ -43,8 +55,13 @@ BEGIN
 			reset => reset,
 			zero_flag_led => zero_flag_led,
 			negative_flag_led => negative_flag_led,
-			debug_command => debug_command
-
+			lcd_e_out => lcd_e_out,
+			sf_d_out => sf_d_out,
+			lcd_rs_out => lcd_rs_out,
+			lcd_rw_out => lcd_rw_out,
+			mem30_led => mem30_led,
+			clk_2s_led => clk_2s_led
+			
         );
 
    -- Clock process definitions
