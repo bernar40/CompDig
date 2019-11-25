@@ -22,15 +22,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.all;
 use IEEE.STD_LOGIC_SIGNED.all;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity alu is
 	port (
 		clk  			: IN  std_logic;
@@ -96,7 +87,7 @@ begin
 						pst <= set;
 						negative_flag <= temp_result(4);
 						if (signed(temp_result) = 0) then
-							zero_flag <= '0';
+							zero_flag <= '1';
 						else
 							zero_flag <= '0';
 						end if;

@@ -3,14 +3,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity control_unit is
 	PORT(
@@ -107,7 +100,7 @@ SIGNAL count_clk : integer := 0;
 SIGNAL direction_clk : std_logic := '1';
 
 -- ESTADOS DE EXECUCAO
-TYPE state_type IS (idle, reading, fecthing, pre_fetching_mv, fetching_mv, pre_processing_mv, processing_mv, pos_processing_mv, fetching_jmp, processing_jmp, processing, processing_ALU, finishing, halt);
+TYPE state_type IS (idle, reading, fecthing, pre_fetching_mv, fetching_mv, pre_processing_mv, processing_mv, pos_processing_mv, pre_fetching_jmp, fetching_jmp, pre_processing_jmp, processing_jmp, pos_processing_jmp, processing, processing_ALU, finishing, halt);
 SIGNAL pst_uc	: 	state_type := idle;
 
 begin
@@ -193,37 +186,42 @@ sf_ce0 <= '0';
 						pst_uc <= pre_processing_mv;
 					when pre_processing_mv =>
 						endereco <= mv_position;
-						r_w <= '1';
 						pst_uc <= processing_mv;
 					when processing_mv =>
-						if (command = "00001") then
+						if (command = "00010") then
 							escrita <= rA;
 						else
 							r_w <= '1';
 						end if;
 						pst_uc <= pos_processing_mv;
 					when pos_processing_mv =>
-						if (command = "00001") then
+						if (command = "00010") then
 							r_w <= '0';
 						else
 							rA <= leitura;
 						end if;
 						pst_uc <= finishing;
+					when pre_fetching_jmp =>
+						r_w <= '1';
+						pst_uc <= fetching_jmp;
 					when fetching_jmp =>
 						jmp_position <= to_integer(unsigned(leitura));
+						pst_uc <= pre_processing_jmp;
+					when pre_processing_jmp =>
 						endereco <= jmp_position;
-						r_w <= '1';
 						pst_uc <= processing_jmp;
-					when processing_jmp => 
-						position <= to_integer(unsigned(leitura));
+					when processing_jmp =>
+						position <= endereco;
 						pst_uc <= idle;
 					when processing =>
 							case command is 
 								when "00001" => -- MOV A, end
 									endereco <= position + 1;
+									position <=  position + 1;
 									pst_uc <= pre_fetching_mv;
 								when "00010" => -- MOV end, A
 									endereco <= position + 1;
+									position <=  position + 1;
 									r_w <= '1';
 									pst_uc <= pre_fetching_mv;
 								when "00011" => -- MOV A, B
@@ -254,27 +252,26 @@ sf_ce0 <= '0';
 									start_ALU <= '1';
 									pst_uc <= processing_ALU;
 								when "01100" => -- JZ
-									if(signed(rA) = 0) then
+									if(zero_flag_uc = '0') then
 										endereco <= position + 1;
-										r_w <= '1';
-										pst_uc <= fetching_jmp;
+										pst_uc <= pre_fetching_jmp;
 									else
+										position <= position + 1;
 										pst_uc <= finishing;
 									end if;						
 								when "01101" => -- JN
-									if(rA(4) = '1') then
+									if(negative_flag_uc = '1') then
 										endereco <= position + 1;
-										r_w <= '1';
-										pst_uc <= fetching_jmp;
+										pst_uc <= pre_fetching_jmp;
 									else
+										position <= position + 1;
 										pst_uc <= finishing;
 									end if;	
 								when "01110" => -- HALT
 									pst_uc <= halt;
 								when "01111" => -- JMP
 									endereco <= position + 1;
-									r_w <= '1';
-									pst_uc <= fetching_jmp;
+									pst_uc <= pre_fetching_jmp;
 								when "10000" => -- INC A
 									start_ALU <= '1';
 									pst_uc <= processing_ALU;	
@@ -308,15 +305,6 @@ sf_ce0 <= '0';
 							halt_bool <= '1';
 							pst_uc <= finishing;
 						when finishing =>
-							if (command = "00001" or command = "00010") then
-								if (signed(rA) = 0) then
-									zero_flag_uc <= '1';
-									negative_flag_uc <= '0';
-								else 
-									negative_flag_uc <= rA(4);
-									zero_flag_uc <= '0';
-								end if;
-							end if;
 							if (position < 31 and halt_bool = '0') then
 									position <= position + 1;
 									pst_uc <= idle;
