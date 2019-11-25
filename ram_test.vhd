@@ -68,32 +68,42 @@ BEGIN
       -- hold reset state for 100 ns.
       wait for 100 ns;	
 		reset <= '0';
-		r_w <= '1';
 		endereco <= 0;
+		r_w <= '1';
+
       wait for clk_period*10;
 		reset <= '0';
+		endereco <= 1;
 		r_w <= '1';
-		endereco <= 0;
-		
---		wait for clk_period*10;
---		reset <= '0';
---		r_w <= '0';
-		
-		
-		wait for clk_period*10;
-		reset <= '0';
-		r_w <= '1';
-		endereco<= 2;
 
---		wait for clk_period*10;
---		r_w <= '0';
-		
-		wait for clk_period*10;
+      wait for clk_period*10;
+		reset <= '0';
+		endereco <= 2;
 		r_w <= '1';
+
+      wait for clk_period*10;
+		reset <= '0';
 		endereco <= 3;
-		
-		wait for clk_period*10;
 		r_w <= '1';
+
+      wait for clk_period*10;
+		reset <= '0';
+		endereco <= 4;
+		r_w <= '1';
+
+      wait for clk_period*10;
+		reset <= '0';
+		endereco <= 5;
+		r_w <= '1';
+
+      wait for clk_period*10;
+		reset <= '0';
+		escrita <= "11111";
+		endereco <= 7;
+		r_w <= '0';
+
+
+
 		
       -- insert stimulus here 
 

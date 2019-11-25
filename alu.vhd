@@ -59,23 +59,23 @@ begin
 									
 							when "00110" => temp_result <= (signed(operando1) - signed(operando2));		-- A - B
 							
-							when "00111" => temp_result <= operando1 AND operando2;									-- A AND B
+							when "00111" => temp_result <= operando1 AND operando2;						 	-- A AND B
 
-							when "01000" => temp_result <= operando1 OR operando2;									-- A OR B
+							when "01000" => temp_result <= operando1 OR operando2;						 	-- A OR B
 
-							when "01001" => temp_result <= operando1 XOR operando2;									-- A XOR B
+							when "01001" => temp_result <= operando1 XOR operando2;							-- A XOR B
 
-							when "01010" => temp_result <= NOT operando1;												-- NOT A
+							when "01010" => temp_result <= NOT operando1;										-- NOT A
 
-							when "01011" => temp_result <= operando1 NAND operando2;									-- A NAND B
+							when "01011" => temp_result <= operando1 NAND operando2;							-- A NAND B
 
-							when "10000" => temp_result <= (signed(operando1) + 1);						-- INC A
+							when "10000" => temp_result <= (signed(operando1) + 1);							-- INC A
 
-							when "10001" => temp_result <= (signed(operando2) + 1);						-- INC B
+							when "10001" => temp_result <= (signed(operando2) + 1);							-- INC B
 
-							when "10010" => temp_result <= (signed(operando1) - 1);						-- DEC A
+							when "10010" => temp_result <= (signed(operando1) - 1);							-- DEC A
 
-							when "10011" => temp_result <= (signed(operando2) - 1);						-- DEC B
+							when "10011" => temp_result <= (signed(operando2) - 1);							-- DEC B
 
 							when others => temp_result <= "00000";
 						end case;

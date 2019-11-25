@@ -88,13 +88,67 @@ BEGIN
 		wait for clk_period*10;
 		operando1 <= "00000";
 		operando2 <= "00001";
-		opcode <= "10010";
+		opcode <= "00110";
 		start <= '1';
 		wait for clk_period;
 		start <= '0';
 		
 
+		wait for clk_period*10;
+		operando1 <= "00000";
+		operando2 <= "00001";
+		opcode <= "00111";
+		start <= '1';
+		wait for clk_period;
+		start <= '0';
+		
+		wait for clk_period*10;
+		operando1 <= "00000";
+		operando2 <= "00001";
+		opcode <= "01000";
+		start <= '1';
+		wait for clk_period;
+		start <= '0';
+		
+		wait for clk_period*10;
+		operando1 <= "00000";
+		operando2 <= "00001";
+		opcode <= "01001";
+		start <= '1';
+		wait for clk_period;
+		start <= '0';
 
+		wait for clk_period*10;
+		operando1 <= "00000";
+		operando2 <= "00001";
+		opcode <= "01010";
+		start <= '1';
+		wait for clk_period;
+		start <= '0';
+
+		wait for clk_period*10;
+		operando1 <= "00000";
+		operando2 <= "00001";
+		opcode <= "10000";
+		start <= '1';
+		wait for clk_period;
+		start <= '0';
+
+		wait for clk_period*10;
+		operando1 <= "00000";
+		operando2 <= "00001";
+		opcode <= "10001";
+		start <= '1';
+		wait for clk_period;
+		start <= '0';
+
+		wait for clk_period*10;
+		operando1 <= "00000";
+		operando2 <= "00001";
+		opcode <= "10010";
+		start <= '1';
+		wait for clk_period;
+		start <= '0';
 		
 
       -- insert stimulus here 

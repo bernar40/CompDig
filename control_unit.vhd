@@ -104,8 +104,8 @@ TYPE state_type IS (idle, reading, fecthing, pre_fetching_mv, fetching_mv, pre_p
 SIGNAL pst_uc	: 	state_type := idle;
 
 begin
-RAM_UC: memoria_ram port map (clk=>clk_2seg, reset=>reset, r_w=>r_w, endereco=>endereco, leitura=>leitura, escrita=>escrita, dado_30=>mem30);
-ALU_UC: alu port map (clk=>clk_2seg, opcode=>command, operando1=>rA, operando2=>rB, result=>result, start=>start_ALU, done=>done_ALU, zero_flag=>zero_flag, negative_flag => negative_flag);
+RAM_UC: memoria_ram port map (clk=>clk, reset=>reset, r_w=>r_w, endereco=>endereco, leitura=>leitura, escrita=>escrita, dado_30=>mem30);
+ALU_UC: alu port map (clk=>clk, opcode=>command, operando1=>rA, operando2=>rB, result=>result, start=>start_ALU, done=>done_ALU, zero_flag=>zero_flag, negative_flag => negative_flag);
 LCD_UC: lcd port map (clk=>clk, opcode=>command, endereco_mv=>mv_position, endereco_jmp=>jmp_position, lcd_rw=>lcd_rw, lcd_rs=>lcd_rs, lcd_e=>lcd_e, sf_d=>sf_d);
 
 zero_flag_led <= zero_flag_uc;
@@ -152,9 +152,9 @@ sf_ce0 <= '0';
 
 
 -- Processo que troca estado a cada subida do clock de 2 segundos
-	process (clk_2seg)
+	process (clk)
 	begin
-		if (clk_2seg'event and clk_2seg = '1') then
+		if (clk'event and clk = '1') then
 			if (reset = '1') then
 				position <= 0;
 				rA <= "00000";
